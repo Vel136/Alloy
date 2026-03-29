@@ -2,6 +2,8 @@
 
 Fast, allocation-free hashing for Roblox.
 
+**[Documentation](https://vel136.github.io/Alloy-/)** · **[Creator Store](https://create.roblox.com/store/asset/75061255262995)**
+
 Alloy is a pure Luau hashing module that maps integers, floats, Vector2s, Vector3s, and arbitrary number tuples to clean unsigned 32-bit integers in the range `[0, 2^32)`. Every function is zero-allocation and safe to call on hot paths.
 
 ---
