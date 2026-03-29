@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[679],{4410:s=>{s.exports=JSON.parse('{"sourceUrl":"https://github.com/Vel136/Alloy-/blob/master","baseUrl":"/Alloy/","classOrder":[{"section":"API","classes":["Alloy"]}],"apiCategories":[]}')}}]);

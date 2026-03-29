@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Alloy | Alloy</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://vel136.github.io/Alloy/api/Alloy"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Alloy | Alloy"><meta data-rh="true" name="description" content="Fast, allocation-free hashing for Roblox.
+
+Alloy maps integers, floats, Vector2s, Vector3s, and arbitrary number tuples
+to clean unsigned 32-bit integers in the range `[0, 2^32)`. Every function is
+zero-allocation and safe to call on hot paths.
+
+**Algorithm.** Alloy uses `boost::hash_combine` to fold input values into a
+running seed, then finalises with the MurmurHash3 `fmix32` avalanche mixer.
+The finalizer passes all SMHasher avalanche tests — flipping any single input
+bit changes ~50% of output bits.
+
+**Precision.** Lua doubles have a 53-bit mantissa. Raw multiplication silently
+drops low bits when both operands are large. Alloy uses a split-multiply
+(`mul32`) that keeps every intermediate product under 2^48, preserving
+correctness across the full 32-bit output range.
+
+**Float inputs.** `hashFloat`, `hashVector2f`, and `hashVector3f` multiply by
+a `scale` factor (default `1000`) before rounding. `math.round` is used instead
+of `math.floor` to avoid IEEE 754 rounding artifacts at precision boundaries —
+`1.001 * 1000` rounds to `1001`, not `1000`.
+
+```lua
+local Alloy = require(ReplicatedStorage.Alloy)
+
+-- Hash a 2D chunk coordinate pair for a spatial grid
+local key = Alloy.hashTuple(chunkX, chunkZ)
+
+-- Map the hash to a 1-based bucket index
+local bucket = Alloy.toBucket(key, 256)
+
+-- Hash a world-space float position with 3dp precision
+local posHash = Alloy.hashVector3f(part.Position)
+```"><meta data-rh="true" property="og:description" content="Fast, allocation-free hashing for Roblox.
+
+Alloy maps integers, floats, Vector2s, Vector3s, and arbitrary number tuples
+to clean unsigned 32-bit integers in the range `[0, 2^32)`. Every function is
+zero-allocation and safe to call on hot paths.
+
+**Algorithm.** Alloy uses `boost::hash_combine` to fold input values into a
+running seed, then finalises with the MurmurHash3 `fmix32` avalanche mixer.
+The finalizer passes all SMHasher avalanche tests — flipping any single input
+bit changes ~50% of output bits.
+
+**Precision.** Lua doubles have a 53-bit mantissa. Raw multiplication silently
+drops low bits when both operands are large. Alloy uses a split-multiply
+(`mul32`) that keeps every intermediate product under 2^48, preserving
+correctness across the full 32-bit output range.
+
+**Float inputs.** `hashFloat`, `hashVector2f`, and `hashVector3f` multiply by
+a `scale` factor (default `1000`) before rounding. `math.round` is used instead
+of `math.floor` to avoid IEEE 754 rounding artifacts at precision boundaries —
+`1.001 * 1000` rounds to `1001`, not `1000`.
+
+```lua
+local Alloy = require(ReplicatedStorage.Alloy)
+
+-- Hash a 2D chunk coordinate pair for a spatial grid
+local key = Alloy.hashTuple(chunkX, chunkZ)
+
+-- Map the hash to a 1-based bucket index
+local bucket = Alloy.toBucket(key, 256)
+
+-- Hash a world-space float position with 3dp precision
+local posHash = Alloy.hashVector3f(part.Position)
+```"><link data-rh="true" rel="canonical" href="https://vel136.github.io/Alloy/api/Alloy"><link data-rh="true" rel="alternate" href="https://vel136.github.io/Alloy/api/Alloy" hreflang="en"><link data-rh="true" rel="alternate" href="https://vel136.github.io/Alloy/api/Alloy" hreflang="x-default"><link rel="stylesheet" href="/Alloy/assets/css/styles.5cbed574.css">
+<script src="/Alloy/assets/js/runtime~main.acd811e3.js" defer="defer"></script>
+<script src="/Alloy/assets/js/main.91fbdca2.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();null!==e?t(e):window.matchMedia("(prefers-color-scheme: dark)").matches?t("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,t("light"))}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/Alloy/"><b class="navbar__title text--truncate">Alloy</b></a><a class="navbar__item navbar__link" href="/Alloy/docs/intro">Docs</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/Alloy/api/">API</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/Vel136/Alloy-" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input id="search_input_react" type="search" placeholder="Loading..." aria-label="Search" class="navbar__search-input search-bar" disabled=""></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/Alloy/api/Alloy">API</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/Alloy/api/Alloy">​Alloy</a></li></ul></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">Alloy</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>Fast, allocation-free hashing for Roblox.</p>
+<p>
+  Alloy maps integers, floats, Vector2s, Vector3s, and arbitrary number tuples
+  to clean unsigned 32-bit integers in the range <code>[0, 2^32)</code>. Every function is
+  zero-allocation and safe to call on hot paths.
+</p>
+<p>
+  <strong>Algorithm.</strong> Alloy uses <code>boost::hash_combine</code> to fold input values into a
+  running seed, then finalises with the MurmurHash3 <code>fmix32</code> avalanche mixer.
+  The finalizer passes all SMHasher avalanche tests — flipping any single input
+  bit changes ~50% of output bits.
+</p>
+<p>
+  <strong>Precision.</strong> Lua doubles have a 53-bit mantissa. Raw multiplication silently
+  drops low bits when both operands are large. Alloy uses a split-multiply
+  (<code>mul32</code>) that keeps every intermediate product under 2^48, preserving
+  correctness across the full 32-bit output range.
+</p>
+<p>
+  <strong>Float inputs.</strong> <code>hashFloat</code>, <code>hashVector2f</code>, and <code>hashVector3f</code> multiply by
+  a <code>scale</code> factor (default <code>1000</code>) before rounding. <code>math.round</code> is used instead
+  of <code>math.floor</code> to avoid IEEE 754 rounding artifacts at precision boundaries —
+  <code>1.001 * 1000</code> rounds to <code>1001</code>, not <code>1000</code>.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> Alloy <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span>ReplicatedStorage<span class="token punctuation">.</span>Alloy<span class="token punctuation">)</span>
+
+<span class="token comment">-- Hash a 2D chunk coordinate pair for a spatial grid</span>
+<span class="token keyword">local</span> key <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashTuple</span><span class="token punctuation">(</span>chunkX<span class="token punctuation">,</span> chunkZ<span class="token punctuation">)</span>
+
+<span class="token comment">-- Map the hash to a 1-based bucket index</span>
+<span class="token keyword">local</span> bucket <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">toBucket</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> <span class="token number">256</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- Hash a world-space float position with 3dp precision</span>
+<span class="token keyword">local</span> posHash <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector3f</span><span class="token punctuation">(</span>part<span class="token punctuation">.</span>Position<span class="token punctuation">)</span>
+</code></pre>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashInt"><code style="text-decoration:none">hashInt</code><a href="#hashInt" class="hash-link" aria-label="Direct link to hashInt" title="Direct link to hashInt">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L64"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashInt</code><code>(</code><div class="inset_uKQm"><div><code>n<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>The value to hash. Floats are floor-truncated before hashing.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a single integer (or float truncated to integer).</p>
+<p>
+  Internally applies <code>fmix32</code> to the floor-truncated, uint32-normalised input.
+  Suitable as a standalone integer hash or as a building block for composite keys
+  via <a href="/Alloy/api/Alloy#combineHashes">Alloy.combineHashes</a>.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> h <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashInt</span><span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> h2 <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashInt</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">7</span><span class="token punctuation">)</span>  <span class="token comment">-- negatives are normalised correctly</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashFloat"><code style="text-decoration:none">hashFloat</code><a href="#hashFloat" class="hash-link" aria-label="Direct link to hashFloat" title="Direct link to hashFloat">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L98"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashFloat</code><code>(</code><div class="inset_uKQm"><div><code>n<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The float to hash.</p>
+</span></span></div><div><code>scale<!-- -->: </code><code class="blue_P4bS">number?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Precision multiplier applied before rounding. Default: <code>1000</code>.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a single float with sub-integer precision.</p>
+<p>
+  The value is multiplied by <code>scale</code> and rounded to the nearest integer before
+  hashing. The default scale of <code>1000</code> preserves 3 decimal places — <code>1.001</code> and
+  <code>1.002</code> produce different hashes.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- Default: 3 decimal places</span>
+<span class="token keyword">local</span> h <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashFloat</span><span class="token punctuation">(</span><span class="token number">3.14159</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- 4 decimal places</span>
+<span class="token keyword">local</span> h2 <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashFloat</span><span class="token punctuation">(</span><span class="token number">3.14159</span><span class="token punctuation">,</span> <span class="token number">10000</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- Nearest 0.5 stud</span>
+<span class="token keyword">local</span> h3 <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashFloat</span><span class="token punctuation">(</span>distance<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span>
+</code></pre>
+
+  
+    
+    
+      <div class="admonition admonition-caution alert alert--warning">
+        <div class="admonition-heading">
+          <h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path>
+              </svg></span><span class="admonition-title">CAUTION</span></h5>
+        </div>
+        <div class="admonition-content">
+          <p>
+            Two floats that round to the same scaled integer produce the same hash. Choose
+            <code>scale</code> to match the precision granularity your use-case requires.
+          </p>
+        </div>
+      </div>
+    
+  
+
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashVector2"><code style="text-decoration:none">hashVector2</code><a href="#hashVector2" class="hash-link" aria-label="Direct link to hashVector2" title="Direct link to hashVector2">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L121"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashVector2</code><code>(</code><div class="inset_uKQm"><div><code>v<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Vector2" target="_blank" rel="noopener noreferrer">Vector2<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
+<p>The vector to hash. Components are floor-truncated.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a Vector2 with integer coordinates.</p>
+<p>
+  X and Y are floor-truncated and folded into a seed using <code>hash_combine</code>, then
+  finalised with <code>fmix32</code>. Use this for tile positions, pixel coordinates, or any
+  grid where components are already whole numbers.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> tileHash <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector2</span><span class="token punctuation">(</span>Vector2<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span>tileX<span class="token punctuation">,</span> tileY<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> seen <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+seen<span class="token punctuation">[</span>tileHash<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">true</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashVector2f"><code style="text-decoration:none">hashVector2f</code><a href="#hashVector2f" class="hash-link" aria-label="Direct link to hashVector2f" title="Direct link to hashVector2f">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L141"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashVector2f</code><code>(</code><div class="inset_uKQm"><div><code>v<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Vector2" target="_blank" rel="noopener noreferrer">Vector2<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The vector to hash.</p>
+</span></span></div><div><code>scale<!-- -->: </code><code class="blue_P4bS">number?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Precision multiplier applied per component. Default: <code>1000</code>.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a Vector2 with sub-integer precision.</p>
+<p>
+  Each component is multiplied by <code>scale</code> and rounded before hashing. Use this
+  for 2D world-space floats where you need stable hashes for fractional values.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> h  <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector2f</span><span class="token punctuation">(</span>position2D<span class="token punctuation">)</span>        <span class="token comment">-- 3 decimal places</span>
+<span class="token keyword">local</span> h2 <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector2f</span><span class="token punctuation">(</span>position2D<span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>   <span class="token comment">-- 2 decimal places</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashVector3"><code style="text-decoration:none">hashVector3</code><a href="#hashVector3" class="hash-link" aria-label="Direct link to hashVector3" title="Direct link to hashVector3">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L165"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashVector3</code><code>(</code><div class="inset_uKQm"><div><code>v<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Vector3" target="_blank" rel="noopener noreferrer">Vector3<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
+<p>The vector to hash. Components are floor-truncated.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a Vector3 with integer coordinates. Zero allocations.</p>
+<p>
+  X, Y, and Z are floor-truncated and folded sequentially into a seed using
+  <code>hash_combine</code>, then finalised with <code>fmix32</code>. The most common use-case is
+  hashing voxel positions or 3D chunk coordinates where components are whole
+  numbers.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> chunkKey <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector3</span><span class="token punctuation">(</span>Vector3<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span>cx<span class="token punctuation">,</span> cy<span class="token punctuation">,</span> cz<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> chunkMap <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+chunkMap<span class="token punctuation">[</span>chunkKey<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">generateChunk</span><span class="token punctuation">(</span>cx<span class="token punctuation">,</span> cy<span class="token punctuation">,</span> cz<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashVector3f"><code style="text-decoration:none">hashVector3f</code><a href="#hashVector3f" class="hash-link" aria-label="Direct link to hashVector3f" title="Direct link to hashVector3f">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L200"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashVector3f</code><code>(</code><div class="inset_uKQm"><div><code>v<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Vector3" target="_blank" rel="noopener noreferrer">Vector3<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The vector to hash.</p>
+</span></span></div><div><code>scale<!-- -->: </code><code class="blue_P4bS">number?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Precision multiplier applied per component. Default: <code>1000</code>.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes a Vector3 with sub-integer precision.</p>
+<p>
+  Each component is multiplied by <code>scale</code> and rounded before hashing. Useful for
+  de-duplicating world-space hit positions, caching impact points, or keying any
+  table by a floating-point position.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- De-duplicate impact positions within 1/1000 stud precision</span>
+<span class="token keyword">local</span> seen <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+<span class="token keyword">local</span> <span class="token keyword">function</span> <span class="token function">onHit</span><span class="token punctuation">(</span>hitResult<span class="token punctuation">)</span>
+    <span class="token keyword">local</span> h <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector3f</span><span class="token punctuation">(</span>hitResult<span class="token punctuation">.</span>Position<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> seen<span class="token punctuation">[</span>h<span class="token punctuation">]</span> <span class="token keyword">then</span> <span class="token keyword">return</span> <span class="token keyword">end</span>
+    seen<span class="token punctuation">[</span>h<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">true</span>
+    <span class="token function">spawnDecal</span><span class="token punctuation">(</span>hitResult<span class="token punctuation">)</span>
+<span class="token keyword">end</span>
+</code></pre>
+
+  
+    
+    
+      <div class="admonition admonition-caution alert alert--warning">
+        <div class="admonition-heading">
+          <h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path>
+              </svg></span><span class="admonition-title">CAUTION</span></h5>
+        </div>
+        <div class="admonition-content">
+          <p>
+            Two positions that round to the same scaled integer triple produce the same
+            hash. Increase <code>scale</code> for finer precision, but be aware that very large scale
+            factors narrow the precision band — a <code>scale</code> of <code>1_000_000</code> on coordinates
+            beyond ±4000 studs can overflow into hash collisions.
+          </p>
+        </div>
+      </div>
+    
+  
+
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hashTuple"><code style="text-decoration:none">hashTuple</code><a href="#hashTuple" class="hash-link" aria-label="Direct link to hashTuple" title="Direct link to hashTuple">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L225"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">hashTuple</code><code>(</code><div class="inset_uKQm"><div><code>...<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>The numbers to hash, in order.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Hashes an arbitrary variadic sequence of numbers.</p>
+<p>
+  Values are folded sequentially using <code>hash_combine</code> and finalised with <code>fmix32</code>.
+  Order is significant — <code>hashTuple(1, 2)</code> and <code>hashTuple(2, 1)</code> produce different
+  hashes. Suitable for composite keys of any arity.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- 2D chunk + vertical layer</span>
+<span class="token keyword">local</span> key <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashTuple</span><span class="token punctuation">(</span>chunkX<span class="token punctuation">,</span> chunkZ<span class="token punctuation">,</span> layer<span class="token punctuation">)</span>
+
+<span class="token comment">-- Player + weapon slot composite key</span>
+<span class="token keyword">local</span> key <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashTuple</span><span class="token punctuation">(</span>playerId<span class="token punctuation">,</span> slotIndex<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="combineHashes"><code style="text-decoration:none">combineHashes</code><a href="#combineHashes" class="hash-link" aria-label="Direct link to combineHashes" title="Direct link to combineHashes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L254"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">combineHashes</code><code>(</code><div class="inset_uKQm"><div><code>a<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>First uint32 hash value.</p>
+</span></span></div><div><code>b<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Second uint32 hash value.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Combined unsigned 32-bit integer in <code>[0, 2^32)</code>.</p>
+</span></span></div><div>
+<p>Combines two already-hashed uint32 values into a single hash.</p>
+<p>
+  Useful for building layered or incremental keys without re-hashing from
+  scratch. The result is passed through <code>fmix32</code> after combining, so the output
+  has full avalanche mixing.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- Hash the chunk origin once, then specialise per layer on demand</span>
+<span class="token keyword">local</span> base  <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector3</span><span class="token punctuation">(</span>chunkOrigin<span class="token punctuation">)</span>
+<span class="token keyword">local</span> full  <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">combineHashes</span><span class="token punctuation">(</span>base<span class="token punctuation">,</span> Alloy<span class="token punctuation">.</span><span class="token function">hashInt</span><span class="token punctuation">(</span>layerIndex<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- Build a composite key from two independent hashes</span>
+<span class="token keyword">local</span> playerHash <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashInt</span><span class="token punctuation">(</span>player<span class="token punctuation">.</span>UserId<span class="token punctuation">)</span>
+<span class="token keyword">local</span> zoneHash   <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashInt</span><span class="token punctuation">(</span>zoneId<span class="token punctuation">)</span>
+<span class="token keyword">local</span> sessionKey <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">combineHashes</span><span class="token punctuation">(</span>playerHash<span class="token punctuation">,</span> zoneHash<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="toBucket"><code style="text-decoration:none">toBucket</code><a href="#toBucket" class="hash-link" aria-label="Direct link to toBucket" title="Direct link to toBucket">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Alloy-/blob/master/docs/Alloy.lua#L283"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Alloy<!-- -->.</code><code class="green_DgR4">toBucket</code><code>(</code><div class="inset_uKQm"><div><code>hash<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>A uint32 hash value produced by any Alloy hash function.</p>
+</span></span></div><div><code>buckets<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Total bucket count. Must be a positive integer.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Bucket index in <code>[1, buckets]</code>.</p>
+</span></span></div><div>
+<p>Maps a hash to a 1-based bucket index in the range <code>[1, buckets]</code>.</p>
+<p>
+  Uses modulo distribution. For best uniformity choose a prime or power-of-two
+  bucket count. The return value is always a valid Lua table index.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> BUCKETS <span class="token operator">=</span> <span class="token number">64</span>
+<span class="token keyword">local</span> table   <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+<span class="token keyword">for</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> BUCKETS <span class="token keyword">do</span> table<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span> <span class="token keyword">end</span>
+
+<span class="token keyword">local</span> <span class="token keyword">function</span> <span class="token function">insert</span><span class="token punctuation">(</span>entity<span class="token punctuation">)</span>
+    <span class="token keyword">local</span> key    <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">hashVector3</span><span class="token punctuation">(</span>entity<span class="token punctuation">.</span>GridPosition<span class="token punctuation">)</span>
+    <span class="token keyword">local</span> bucket <span class="token operator">=</span> Alloy<span class="token punctuation">.</span><span class="token function">toBucket</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> BUCKETS<span class="token punctuation">)</span>
+    table<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>table<span class="token punctuation">[</span>bucket<span class="token punctuation">]</span><span class="token punctuation">,</span> entity<span class="token punctuation">)</span>
+<span class="token keyword">end</span>
+</code></pre>
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;hashInt&quot;,
+            &quot;desc&quot;: &quot;Hashes a single integer (or float truncated to integer).\n\nInternally applies `fmix32` to the floor-truncated, uint32-normalised input.\nSuitable as a standalone integer hash or as a building block for composite keys\nvia [Alloy.combineHashes].\n\n```lua\nlocal h = Alloy.hashInt(42)\nlocal h2 = Alloy.hashInt(-7)  -- negatives are normalised correctly\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;n&quot;,
+                    &quot;desc&quot;: &quot;The value to hash. Floats are floor-truncated before hashing.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 64,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashFloat&quot;,
+            &quot;desc&quot;: &quot;Hashes a single float with sub-integer precision.\n\nThe value is multiplied by `scale` and rounded to the nearest integer before\nhashing. The default scale of `1000` preserves 3 decimal places — `1.001` and\n`1.002` produce different hashes.\n\n```lua\n-- Default: 3 decimal places\nlocal h = Alloy.hashFloat(3.14159)\n\n-- 4 decimal places\nlocal h2 = Alloy.hashFloat(3.14159, 10000)\n\n-- Nearest 0.5 stud\nlocal h3 = Alloy.hashFloat(distance, 2)\n```\n\n:::caution\nTwo floats that round to the same scaled integer produce the same hash. Choose\n`scale` to match the precision granularity your use-case requires.\n:::&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;n&quot;,
+                    &quot;desc&quot;: &quot;The float to hash.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;scale&quot;,
+                    &quot;desc&quot;: &quot;Precision multiplier applied before rounding. Default: `1000`.&quot;,
+                    &quot;lua_type&quot;: &quot;number?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 98,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashVector2&quot;,
+            &quot;desc&quot;: &quot;Hashes a Vector2 with integer coordinates.\n\nX and Y are floor-truncated and folded into a seed using `hash_combine`, then\nfinalised with `fmix32`. Use this for tile positions, pixel coordinates, or any\ngrid where components are already whole numbers.\n\n```lua\nlocal tileHash = Alloy.hashVector2(Vector2.new(tileX, tileY))\nlocal seen = {}\nseen[tileHash] = true\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;v&quot;,
+                    &quot;desc&quot;: &quot;The vector to hash. Components are floor-truncated.&quot;,
+                    &quot;lua_type&quot;: &quot;Vector2&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 121,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashVector2f&quot;,
+            &quot;desc&quot;: &quot;Hashes a Vector2 with sub-integer precision.\n\nEach component is multiplied by `scale` and rounded before hashing. Use this\nfor 2D world-space floats where you need stable hashes for fractional values.\n\n```lua\nlocal h  = Alloy.hashVector2f(position2D)        -- 3 decimal places\nlocal h2 = Alloy.hashVector2f(position2D, 100)   -- 2 decimal places\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;v&quot;,
+                    &quot;desc&quot;: &quot;The vector to hash.&quot;,
+                    &quot;lua_type&quot;: &quot;Vector2&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;scale&quot;,
+                    &quot;desc&quot;: &quot;Precision multiplier applied per component. Default: `1000`.&quot;,
+                    &quot;lua_type&quot;: &quot;number?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 141,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashVector3&quot;,
+            &quot;desc&quot;: &quot;Hashes a Vector3 with integer coordinates. Zero allocations.\n\nX, Y, and Z are floor-truncated and folded sequentially into a seed using\n`hash_combine`, then finalised with `fmix32`. The most common use-case is\nhashing voxel positions or 3D chunk coordinates where components are whole\nnumbers.\n\n```lua\nlocal chunkKey = Alloy.hashVector3(Vector3.new(cx, cy, cz))\nlocal chunkMap = {}\nchunkMap[chunkKey] = generateChunk(cx, cy, cz)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;v&quot;,
+                    &quot;desc&quot;: &quot;The vector to hash. Components are floor-truncated.&quot;,
+                    &quot;lua_type&quot;: &quot;Vector3&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 165,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashVector3f&quot;,
+            &quot;desc&quot;: &quot;Hashes a Vector3 with sub-integer precision.\n\nEach component is multiplied by `scale` and rounded before hashing. Useful for\nde-duplicating world-space hit positions, caching impact points, or keying any\ntable by a floating-point position.\n\n```lua\n-- De-duplicate impact positions within 1/1000 stud precision\nlocal seen = {}\n\nlocal function onHit(hitResult)\n    local h = Alloy.hashVector3f(hitResult.Position)\n    if seen[h] then return end\n    seen[h] = true\n    spawnDecal(hitResult)\nend\n```\n\n:::caution\nTwo positions that round to the same scaled integer triple produce the same\nhash. Increase `scale` for finer precision, but be aware that very large scale\nfactors narrow the precision band — a `scale` of `1_000_000` on coordinates\nbeyond ±4000 studs can overflow into hash collisions.\n:::&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;v&quot;,
+                    &quot;desc&quot;: &quot;The vector to hash.&quot;,
+                    &quot;lua_type&quot;: &quot;Vector3&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;scale&quot;,
+                    &quot;desc&quot;: &quot;Precision multiplier applied per component. Default: `1000`.&quot;,
+                    &quot;lua_type&quot;: &quot;number?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 200,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hashTuple&quot;,
+            &quot;desc&quot;: &quot;Hashes an arbitrary variadic sequence of numbers.\n\nValues are folded sequentially using `hash_combine` and finalised with `fmix32`.\nOrder is significant — `hashTuple(1, 2)` and `hashTuple(2, 1)` produce different\nhashes. Suitable for composite keys of any arity.\n\n```lua\n-- 2D chunk + vertical layer\nlocal key = Alloy.hashTuple(chunkX, chunkZ, layer)\n\n-- Player + weapon slot composite key\nlocal key = Alloy.hashTuple(playerId, slotIndex)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;The numbers to hash, in order.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 225,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;combineHashes&quot;,
+            &quot;desc&quot;: &quot;Combines two already-hashed uint32 values into a single hash.\n\nUseful for building layered or incremental keys without re-hashing from\nscratch. The result is passed through `fmix32` after combining, so the output\nhas full avalanche mixing.\n\n```lua\n-- Hash the chunk origin once, then specialise per layer on demand\nlocal base  = Alloy.hashVector3(chunkOrigin)\nlocal full  = Alloy.combineHashes(base, Alloy.hashInt(layerIndex))\n\n-- Build a composite key from two independent hashes\nlocal playerHash = Alloy.hashInt(player.UserId)\nlocal zoneHash   = Alloy.hashInt(zoneId)\nlocal sessionKey = Alloy.combineHashes(playerHash, zoneHash)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;a&quot;,
+                    &quot;desc&quot;: &quot;First uint32 hash value.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;b&quot;,
+                    &quot;desc&quot;: &quot;Second uint32 hash value.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Combined unsigned 32-bit integer in `[0, 2^32)`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 254,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;toBucket&quot;,
+            &quot;desc&quot;: &quot;Maps a hash to a 1-based bucket index in the range `[1, buckets]`.\n\nUses modulo distribution. For best uniformity choose a prime or power-of-two\nbucket count. The return value is always a valid Lua table index.\n\n```lua\nlocal BUCKETS = 64\nlocal table   = {}\nfor i = 1, BUCKETS do table[i] = {} end\n\nlocal function insert(entity)\n    local key    = Alloy.hashVector3(entity.GridPosition)\n    local bucket = Alloy.toBucket(key, BUCKETS)\n    table.insert(table[bucket], entity)\nend\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;hash&quot;,
+                    &quot;desc&quot;: &quot;A uint32 hash value produced by any Alloy hash function.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;buckets&quot;,
+                    &quot;desc&quot;: &quot;Total bucket count. Must be a positive integer.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Bucket index in `[1, buckets]`.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 283,
+                &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [],
+    &quot;types&quot;: [],
+    &quot;name&quot;: &quot;Alloy&quot;,
+    &quot;desc&quot;: &quot;Fast, allocation-free hashing for Roblox.\n\nAlloy maps integers, floats, Vector2s, Vector3s, and arbitrary number tuples\nto clean unsigned 32-bit integers in the range `[0, 2^32)`. Every function is\nzero-allocation and safe to call on hot paths.\n\n**Algorithm.** Alloy uses `boost::hash_combine` to fold input values into a\nrunning seed, then finalises with the MurmurHash3 `fmix32` avalanche mixer.\nThe finalizer passes all SMHasher avalanche tests — flipping any single input\nbit changes ~50% of output bits.\n\n**Precision.** Lua doubles have a 53-bit mantissa. Raw multiplication silently\ndrops low bits when both operands are large. Alloy uses a split-multiply\n(`mul32`) that keeps every intermediate product under 2^48, preserving\ncorrectness across the full 32-bit output range.\n\n**Float inputs.** `hashFloat`, `hashVector2f`, and `hashVector3f` multiply by\na `scale` factor (default `1000`) before rounding. `math.round` is used instead\nof `math.floor` to avoid IEEE 754 rounding artifacts at precision boundaries —\n`1.001 * 1000` rounds to `1001`, not `1000`.\n\n```lua\nlocal Alloy = require(ReplicatedStorage.Alloy)\n\n-- Hash a 2D chunk coordinate pair for a spatial grid\nlocal key = Alloy.hashTuple(chunkX, chunkZ)\n\n-- Map the hash to a 1-based bucket index\nlocal bucket = Alloy.toBucket(key, 256)\n\n-- Hash a world-space float position with 3dp precision\nlocal posHash = Alloy.hashVector3f(part.Position)\n```&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 42,
+        &quot;path&quot;: &quot;docs/Alloy.lua&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#combineHashes" class="table-of-contents__link toc-highlight">.combineHashes</a></li><li><a href="#hashFloat" class="table-of-contents__link toc-highlight">.hashFloat</a></li><li><a href="#hashInt" class="table-of-contents__link toc-highlight">.hashInt</a></li><li><a href="#hashTuple" class="table-of-contents__link toc-highlight">.hashTuple</a></li><li><a href="#hashVector2" class="table-of-contents__link toc-highlight">.hashVector2</a></li><li><a href="#hashVector2f" class="table-of-contents__link toc-highlight">.hashVector2f</a></li><li><a href="#hashVector3" class="table-of-contents__link toc-highlight">.hashVector3</a></li><li><a href="#hashVector3f" class="table-of-contents__link toc-highlight">.hashVector3f</a></li><li><a href="#toBucket" class="table-of-contents__link toc-highlight">.toBucket</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://discord.gg/XMYMRKcd3g" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord Server<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://discord.com/users/897026279243669504" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord (Direct)<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">Social</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://www.instagram.com/vedevelopment/" target="_blank" rel="noopener noreferrer" class="footer__link-item">Instagram<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://x.com/vedevelopment_" target="_blank" rel="noopener noreferrer" class="footer__link-item">X (Twitter)<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://www.tiktok.com/@vedevelopment" target="_blank" rel="noopener noreferrer" class="footer__link-item">TikTok<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 VeDevelopment</div></div></div></footer></div>
+</body>
+</html>
